@@ -9,7 +9,8 @@ import (
 )
 
 func GetConfig( file_path string ) ( result types.ConfigFile ) {
-	file , _ := ioutil.ReadFile( file_path )
+	file , file_read_err := ioutil.ReadFile( file_path )
+	if file_read_err != nil { panic( file_read_err ) }
 	error := yaml.Unmarshal( file , &result )
 	if error != nil { panic( error ) }
 	return

@@ -7,9 +7,8 @@ import (
 )
 
 func main() {
-	config := utils.GetConfig( "config.yml" )
+	config := utils.GetConfig( "./config.yaml" )
 	tv := lg_tv.New( &config )
-
 	tv.API( "power_on" )
 	tv.API( "set_volume", types.Payload{
 		"volume": 15 ,

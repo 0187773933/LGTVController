@@ -75,11 +75,12 @@ func ( ctrl *Controller ) Pair() ( result string ) {
 
 func ( ctrl *Controller ) SendCommand( endpoint types.Endpoint ) {
 	fmt.Println( "SendCommand()" , endpoint )
-	// if ctrl.Config.ClientKey == "" {
-	// 	fmt.Println( "Client Key is Empty !!!" )
-	// 	fmt.Println( "You have to Pair , and Recieve a Client Key !!!" )
-	// 	return
-	// }
+	if ctrl.Config.ClientKey == "" {
+		fmt.Println( "Client Key is Empty !!!" )
+		fmt.Println( "You have to Pair , and Recieve a Client Key !!!" )
+		return
+	}
+	if endpoint.Payload == nil { endpoint.Payload = types.Payload{} } // might not need this ?
 	// ws := ctrl.Connect()
 
 	// ws.Close()

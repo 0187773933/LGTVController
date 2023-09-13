@@ -1,0 +1,6 @@
+app_ids:
+  live_tv: com.webos.app.livetv
+  youtube: youtube.leanback.v4
+  netflix: netflix
+  amazon: amzaon
+  airplay: airplay

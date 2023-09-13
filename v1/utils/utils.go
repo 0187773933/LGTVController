@@ -8,7 +8,14 @@ import (
 	types "github.com/0187773933/LGTVController/v1/types"
 )
 
-func ParseConfig( file_path string ) ( result types.ConfigFile ) {
+func GetConfig( file_path string ) ( result types.ConfigFile ) {
+	file , _ := ioutil.ReadFile( file_path )
+	error := yaml.Unmarshal( file , &result )
+	if error != nil { panic( error ) }
+	return
+}
+
+func GetEndpoints( file_path string ) ( result types.Endpoints ) {
 	file , _ := ioutil.ReadFile( file_path )
 	error := yaml.Unmarshal( file , &result )
 	if error != nil { panic( error ) }

@@ -14,6 +14,6 @@ func main() {
 	tv.API( "set_volume", types.Payload{
 		"volume": 15 ,
 	})
-	fmt.Println( tv.API( "set_mute" ) )
-
+	tv.API( "set_mute" )
+	fmt.Println( tv.API( "get_volume" ) )
 }

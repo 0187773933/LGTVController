@@ -14,7 +14,7 @@ type Endpoint struct {
 }
 type Endpoints map[string]Endpoint
 
-type API map[string]func( Endpoint )
+type API map[string]func( Endpoint )( string )
 
 type Message struct {
 	ClientKey string `json:"client-key"`

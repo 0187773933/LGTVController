@@ -2,12 +2,16 @@ package controller
 
 import (
 	"fmt"
-	// "time"
+	"time"
+	"math/rand"
+	"strconv"
 	"net"
 	utils "github.com/0187773933/LGTVController/v1/utils"
 	types "github.com/0187773933/LGTVController/v1/types"
 	websocket "github.com/gorilla/websocket"
 )
+
+const letters = "abcdefghijklmnopqrstuvwxyz"
 
 type Controller struct {
 	Config *types.ConfigFile
@@ -23,15 +27,20 @@ func New( config *types.ConfigFile ) ( ctrl *Controller ) {
 		Endpoints: endpoints ,
 		API_Data: api ,
 	}
-	// for endpoint_name , endpoint := range endpoints {
-	// 	x_endpoint := endpoint
-	// 	ctrl.API[ endpoint_name ] = func() {
-	// 		ctrl.SendCommand( x_endpoint )
-	// 	}
-	// }
 	for endpoint_name := range endpoints {
 		ctrl.API_Data[ endpoint_name ] = ctrl.SendCommand
 	}
+	return
+}
+
+func ( ctrl *Controller ) GenMessageID() ( result string ) {
+	rand.Seed( time.Now().UnixNano() )
+	prefix_a := make( []byte , 3 )
+	for i := range prefix_a { prefix_a[ i ] = letters[ rand.Intn( len( letters ) ) ] }
+	prefix := string( prefix_a )
+	suffix_int := ( rand.Intn( 100 ) + 1 )
+	suffix := strconv.Itoa( suffix_int )
+	result = fmt.Sprintf( "lgtv_%s_%s" , prefix , suffix )
 	return
 }
 
@@ -73,7 +82,7 @@ func ( ctrl *Controller ) Pair() ( result string ) {
 	return
 }
 
-func ( ctrl *Controller ) SendCommand( endpoint types.Endpoint ) {
+func ( ctrl *Controller ) SendCommand( endpoint types.Endpoint ) ( result string ) {
 	fmt.Println( "SendCommand()" , endpoint )
 	if ctrl.Config.ClientKey == "" {
 		fmt.Println( "Client Key is Empty !!!" )
@@ -81,14 +90,43 @@ func ( ctrl *Controller ) SendCommand( endpoint types.Endpoint ) {
 		return
 	}
 	if endpoint.Payload == nil { endpoint.Payload = types.Payload{} } // might not need this ?
-	// ws := ctrl.Connect()
-
-	// ws.Close()
+	message_id := ctrl.GenMessageID()
+	uri := fmt.Sprintf( "ssap://%s" , endpoint.Path )
+	message := &types.Message{
+		Id: message_id ,
+		Type: "request" ,
+		Uri: uri ,
+		Payload: endpoint.Payload ,
+		ClientKey: ctrl.Config.ClientKey ,
+	}
+	timeout := time.After( 5 * time.Second )
+	message_channel := make( chan []byte )
+	go func() {
+		ws := ctrl.Connect()
+		write_err := ws.WriteJSON( message )
+		if write_err != nil { panic( write_err ) }
+		_ , response_bytes , response_err := ws.ReadMessage()
+		ws.Close()
+		if response_err == nil {
+			message_channel <- response_bytes
+		} else {
+			close( message_channel )
+		}
+	}()
+	select {
+		case response_bytes , ok := <-message_channel:
+			if ok {
+				result = string( response_bytes )
+			} else {
+				result = "error reading message"
+			}
+		case <-timeout:
+			result = "timeout while reading message"
+	}
 	return
 }
 
-
-func ( ctrl *Controller ) API( endpoint_name string , payload ...types.Payload ) {
+func ( ctrl *Controller ) API( endpoint_name string , payload ...types.Payload ) ( result string ) {
 	original_endpoint := ( ctrl.Endpoints )[ endpoint_name ]
 	new_payload := make( types.Payload )
 	for k , v := range original_endpoint.Payload {
@@ -103,30 +141,6 @@ func ( ctrl *Controller ) API( endpoint_name string , payload ...types.Payload )
 		Path: original_endpoint.Path ,
 		Payload: new_payload ,
 	}
-	ctrl.API_Data[ endpoint_name ]( new_endpoint )
-}
-
-
-func ( ctrl *Controller ) TestCommand() ( result string ) {
-	ws := ctrl.Connect()
-	uri := fmt.Sprintf( "ssap://%s" , "audio/volumeUp" )
-	request_name := "volume_up"
-	command_count := "1"
-	payload := &types.Payload{}
-	message := &types.Message{
-		Id: fmt.Sprintf( "lgtv_%s_%s" , request_name , command_count ) ,
-		Type: "request" ,
-		Uri: uri ,
-		Payload: *payload ,
-		ClientKey: "asdf" ,
-	}
-	write_err := ws.WriteJSON(  message )
-	if write_err != nil { panic( write_err ) }
-	_ , response_bytes , _ := ws.ReadMessage()
-	result = string( response_bytes )
-	ws.Close()
+	result = ctrl.API_Data[ endpoint_name ]( new_endpoint )
 	return
 }
-
-
-

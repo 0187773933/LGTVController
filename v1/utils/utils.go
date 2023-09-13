@@ -16,7 +16,7 @@ func ParseConfig( file_path string ) ( result types.ConfigFile ) {
 }
 
 func GetHandshakeData() ( hand_shake_json interface{} ) {
-	hand_shake_file , _ := os.Open( "handshake.json" )
+	hand_shake_file , _ := os.Open( "./v1/utils/handshake.json" )
 	defer hand_shake_file.Close()
 	hand_shake_bytes , _ := ioutil.ReadAll( hand_shake_file )
 	json.Unmarshal( hand_shake_bytes , &hand_shake_json )

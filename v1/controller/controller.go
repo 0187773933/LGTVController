@@ -20,7 +20,8 @@ type Controller struct {
 }
 
 func New( config *types.ConfigFile ) ( ctrl *Controller ) {
-	endpoints := utils.GetEndpoints( "./v1/misc/endpoints.yaml" )
+	// endpoints := utils.GetEndpoints( "./v1/misc/endpoints.yaml" )
+	endpoints := utils.GetEndpoints()
 	api := make( types.API )
 	ctrl = &Controller{
 		Config: config ,

@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"strconv"
 	"net"
+	"encoding/json"
 	utils "github.com/0187773933/LGTVController/v1/utils"
 	types "github.com/0187773933/LGTVController/v1/types"
 	websocket "github.com/gorilla/websocket"
@@ -100,10 +101,14 @@ func ( ctrl *Controller ) SendCommand( endpoint types.Endpoint ) ( result string
 		Payload: endpoint.Payload ,
 		ClientKey: ctrl.Config.ClientKey ,
 	}
-	timeout := time.After( 5 * time.Second )
+	timeout := time.After( ctrl.Config.TimeoutSeconds * time.Second )
 	message_channel := make( chan []byte )
+	var ws *websocket.Conn
 	go func() {
-		ws := ctrl.Connect()
+		ws = ctrl.Connect()
+		// fmt.Println( "Sending :" , message )
+		message_json , _ := json.Marshal( message )
+		fmt.Println( "Sending :" , string( message_json ) )
 		write_err := ws.WriteJSON( message )
 		if write_err != nil { panic( write_err ) }
 		_ , response_bytes , response_err := ws.ReadMessage()
@@ -119,9 +124,11 @@ func ( ctrl *Controller ) SendCommand( endpoint types.Endpoint ) ( result string
 			if ok {
 				result = string( response_bytes )
 			} else {
+				ws.Close()
 				result = "error reading message"
 			}
 		case <-timeout:
+			ws.Close()
 			result = "timeout while reading message"
 	}
 	return

@@ -5,3 +5,7 @@
 - https://github.com/TheRealLink/pylgtv
 - https://github.com/48723247842/LGTVController
 - https://github.com/snabb/webostv
+
+## Todo
+
+1. Magic Packet Wakeup ?

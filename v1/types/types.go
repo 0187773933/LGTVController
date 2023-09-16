@@ -2,6 +2,7 @@ package types
 
 type ConfigFile struct {
 	TVIP string `yaml:"tv_ip"`
+	TVMAC string `yaml:"tv_mac"`
 	WebSocketPort string `yaml:"websocket_port"`
 	ClientKey string `yaml:"client_key"`
 	TimeoutSeconds int `yaml:"timeout_seconds"`

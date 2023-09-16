@@ -152,3 +152,21 @@ func ( ctrl *Controller ) API( endpoint_name string , payload ...types.Payload )
 	result = ctrl.API_Data[ endpoint_name ]( new_endpoint )
 	return
 }
+
+func ( ctrl *Controller ) WakeOnLan() {
+	mac_bytes , _ := net.ParseMAC( ctrl.Config.TVMAC )
+	magic_packet := []byte{}
+	for i := 0; i < 6; i++ {
+		magic_packet = append( magic_packet , 0xFF )
+	}
+	for i := 0; i < 16; i++ {
+		magic_packet = append( magic_packet , mac_bytes... )
+	}
+	addr := &net.UDPAddr{
+		IP:   net.IPv4bcast ,
+		Port: 9 ,
+	}
+	conn , _ := net.DialUDP( "udp" , nil , addr )
+	defer conn.Close()
+	conn.Write( magic_packet )
+}

@@ -101,7 +101,7 @@ func ( ctrl *Controller ) SendCommand( endpoint types.Endpoint ) ( result string
 		Payload: endpoint.Payload ,
 		ClientKey: ctrl.Config.ClientKey ,
 	}
-	timeout := time.After( ctrl.Config.TimeoutSeconds * time.Second )
+	timeout := time.After( time.Duration( ctrl.Config.TimeoutSeconds ) * time.Second )
 	message_channel := make( chan []byte )
 	var ws *websocket.Conn
 	go func() {

@@ -124,11 +124,15 @@ func ( ctrl *Controller ) SendCommand( endpoint types.Endpoint ) ( result string
 			if ok {
 				result = string( response_bytes )
 			} else {
-				ws.Close()
+				if ws != nil {
+					ws.Close()
+				}
 				result = "error reading message"
 			}
 		case <-timeout:
-			ws.Close()
+			if ws != nil {
+				ws.Close()
+			}
 			result = "timeout while reading message"
 	}
 	return
@@ -163,7 +167,7 @@ func ( ctrl *Controller ) WakeOnLan() {
 		magic_packet = append( magic_packet , mac_bytes... )
 	}
 	addr := &net.UDPAddr{
-		IP:   net.IPv4bcast ,
+		IP: net.IPv4bcast ,
 		Port: 9 ,
 	}
 	conn , _ := net.DialUDP( "udp" , nil , addr )

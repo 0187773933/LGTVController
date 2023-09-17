@@ -112,7 +112,9 @@ func ( ctrl *Controller ) SendCommand( endpoint types.Endpoint ) ( result string
 		write_err := ws.WriteJSON( message )
 		if write_err != nil { panic( write_err ) }
 		_ , response_bytes , response_err := ws.ReadMessage()
-		ws.Close()
+		if ws != nil {
+			ws.Close()
+		}
 		if response_err == nil {
 			message_channel <- response_bytes
 		} else {
